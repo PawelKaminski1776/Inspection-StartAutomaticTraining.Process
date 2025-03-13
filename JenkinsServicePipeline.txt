@@ -62,6 +62,9 @@ pipeline {
 					bat """
 					git config --global --add safe.directory C:/Users/pawel/.jenkins/workspace/Service-Generator
 					git remote set-url origin ${NEW_REPO}
+					git checkout -b main
+					git add .
+					git commit -m "Initial commit"
 					git push -u origin main
 					"""
 				}
