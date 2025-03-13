@@ -1,0 +1,130 @@
+pipeline {
+    agent any
+
+    parameters {
+        string(name: 'SERVICE_NAME', defaultValue: 'NewService', description: 'Enter the new service name')
+        string(name: 'PORT_NUMBER', defaultValue: '5001', description: 'Enter the new port number')
+        string(name: 'GITHUB_ORG', defaultValue: 'PawelKaminski1776', description: 'GitHub Organization or Username')
+    }
+
+    environment {
+        TEMPLATE_REPO = "https://github.com/${params.GITHUB_ORG}/Inspection-Template.git"
+        NEW_REPO_NAME = "Inspection-${params.SERVICE_NAME}.Process"
+        NEW_REPO = "https://github.com/${params.GITHUB_ORG}/${NEW_REPO_NAME}.git"
+        LOCAL_FOLDER = "Inspection-${params.SERVICE_NAME}.Process"
+        PROJECT_NAME = "Inspection-${params.SERVICE_NAME}.Process"
+        JENKINS_FOLDER = "Docker-Deployment"
+        JENKINS_USER = "pawelkaminski1776"
+        JENKINS_API_TOKEN = credentials('jenkins-api-token')
+        GITHUB_TOKEN = credentials('github-api-token')
+        JENKINS_URL = "http://localhost:8080/"
+    }
+
+    stages {
+        stage('Clone Template') {
+            steps {
+                script {
+                    bat """
+                    rmdir /s /q ${LOCAL_FOLDER} 2>nul
+                    git clone %TEMPLATE_REPO% %LOCAL_FOLDER%
+                    """
+                }
+            }
+        }
+
+        stage('Rename Project and Update Files') {
+            steps {
+                script {
+                    bat """
+                    cd %LOCAL_FOLDER%
+                    ren Inspection-Template.Channel Inspection-%SERVICE_NAME%.Channel
+                    ren Inspection-Template.Controllers Inspection-%SERVICE_NAME%.Controllers
+                    ren Inspection-Template.Handlers Inspection-%SERVICE_NAME%.Handlers
+                    ren Inspection-Template.Messages Inspection-%SERVICE_NAME%.Messages
+                    ren Inspection-Template.Process Inspection-%SERVICE_NAME%.Process
+                    for /r %%f in (*) do (powershell -Command "(Get-Content '%%f') -replace 'Inspection-Template', 'Inspection-%SERVICE_NAME%' | Set-Content '%%f'")
+                    ren Inspection-Template.dockerfile Inspection-%SERVICE_NAME%.dockerfile
+                    """
+                }
+            }
+        }
+
+        stage('Create New GitHub Repo') {
+            steps {
+                script {
+                    bat """
+						curl -u "PawelKaminski1776:${GITHUB_TOKEN}" ^
+							-H "Accept: application/vnd.github.v3+json" ^
+							-d "{\\"name\\":\\"${NEW_REPO_NAME}\\", \\"private\\":false}" ^
+							https://api.github.com/user/repos
+						"""
+
+                }
+            }
+        }
+
+		stage('Push New Service to GitHub') {
+			steps {
+				script {
+					bat """
+					cd %LOCAL_FOLDER%
+					
+					REM Check Current Repo
+					git remote -v
+					
+					REM Switch Repos 
+					git remote set-url origin ${NEW_REPO}
+					
+					REM Check Repo Again
+					git remote -v
+					
+					REM Hopefully Pushes
+					git push -u origin main
+					"""
+				}
+			}
+		}
+		
+        stage('Ensure Jenkins Folder Exists') {
+            steps {
+                script {
+                    bat """
+                    curl -X POST -u "%JENKINS_USER%:%JENKINS_API_TOKEN%" -H "Content-Type: application/xml" -d "<com.cloudbees.hudson.plugins.folder.Folder>\n<description>Folder for Docker Deployments</description>\n</com.cloudbees.hudson.plugins.folder.Folder>" %JENKINS_URL%/createItem?name=%JENKINS_FOLDER%&mode=com.cloudbees.hudson.plugins.folder.Folder
+                    """
+                }
+            }
+        }
+
+        stage('Create Jenkins Pipeline for New Service') {
+            steps {
+                script {
+                    def pipelineScript = """
+                    pipeline {
+                        agent any
+                        environment {
+                            GIT_REPO = \"${NEW_REPO}\"
+                        }
+                        stages {
+                            stage('Checkout') {
+                                steps {
+                                    checkout scm: [
+                                        \$class: 'GitSCM',
+                                        branches: [[name: '*/main']],
+                                        userRemoteConfigs: [[url: GIT_REPO]]
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                    """
+
+                    writeFile file: "pipeline-${params.SERVICE_NAME}.groovy", text: pipelineScript
+
+                    bat """
+                    curl -X POST -u "pawelkaminski1776:%JENKINS_API_TOKEN%" -H "Content-Type: application/json" -d "{\"name\":\"%SERVICE_NAME%-Pipeline\", \"mode\":\"org.jenkinsci.plugins.workflow.job.WorkflowJob\", \"from\":\"\", \"Submit\":\"OK\"}" %JENKINS_URL%/job/%JENKINS_FOLDER%/createItem?name=Project-%SERVICE_NAME%-Docker
+                    """
+                }
+            }
+        }
+    }
+}

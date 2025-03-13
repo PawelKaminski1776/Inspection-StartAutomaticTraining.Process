@@ -1,0 +1,7 @@
+# Ignore the .learningtransport folder and all its contents
+.learningtransport/
+
+# Ignore build and object files for all submodules
+**/bin/
+**/obj/
+**/.vs/
