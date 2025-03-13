@@ -62,14 +62,28 @@ pipeline {
 					bat """
 					git config --global --add safe.directory C:/Users/pawel/.jenkins/workspace/Service-Generator
 					git remote set-url origin ${NEW_REPO}
-					git checkout -b main
+
+					REM Check if branch 'main' already exists
+					git rev-parse --verify main >nul 2>&1
+					IF %ERRORLEVEL% NEQ 0 (
+						git checkout -b main
+					) ELSE (
+						git checkout main
+					)
+
+					REM Fix potential index corruption
+					IF EXIST .git\\index (
+						del .git\\index
+					)
+
 					git add .
-					git commit -m "Initial commit"
+					git commit -m "Initial commit" || echo No changes to commit
 					git push -u origin main
 					"""
 				}
 			}
 		}
+
 		
         stage('Ensure Jenkins Folder Exists') {
             steps {
