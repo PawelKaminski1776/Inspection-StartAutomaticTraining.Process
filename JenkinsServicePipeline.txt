@@ -40,8 +40,7 @@ pipeline {
 			steps {
 				script {
 					bat """
-					cd ${TEMPLATE_DIR}
-					git clone %TEMPLATE_REPO%
+					git clone %TEMPLATE_REPO% ${TEMPLATE_DIR}
 					"""
 				}
 			}
