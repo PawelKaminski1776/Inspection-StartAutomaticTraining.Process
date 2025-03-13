@@ -94,7 +94,7 @@ pipeline {
 				script {
 					bat """
 					cd ${LOCAL_FOLDER}
-					git remote add origin ${NEW_REPO}
+					git remote set-url origin ${NEW_REPO}
 					git add .
 					git commit -m "Initial commit for ${NEW_REPO_NAME}"
 					git push -u origin main
