@@ -22,35 +22,10 @@ pipeline {
     }
 
     stages {
-        stage('Prepare Directories') {
-            steps {
-                script {
-					bat """
-					rmdir /s /q ${TEMPLATE_DIR} 2>nul
-					rmdir /s /q ${LOCAL_FOLDER} 2>nul
-					mkdir ${TEMPLATE_DIR}
-					mkdir ${LOCAL_FOLDER}
-					"""
-                }
-            }
-        }
-		
-		
-		stage('Clone Template') {
-			steps {
-				script {
-					bat """
-					git clone %TEMPLATE_REPO% ${TEMPLATE_DIR}
-					"""
-				}
-			}
-		}
-
         stage('Rename Project and Update Files') {
             steps {
                 script {
                     bat """
-                    cd ${TEMPLATE_DIR}
                     ren Inspection-Template.Channel Inspection-%SERVICE_NAME%.Channel
                     ren Inspection-Template.Controllers Inspection-%SERVICE_NAME%.Controllers
                     ren Inspection-Template.Handlers Inspection-%SERVICE_NAME%.Handlers
@@ -64,16 +39,6 @@ pipeline {
             }
         }
 		
-		stage('Copy Renamed Files to New Directory') {
-			steps {
-				script {
-					bat """
-					xcopy /e /i /h /s ${TEMPLATE_DIR}\\* ${LOCAL_FOLDER}\
-					"""
-				}
-			}
-		}
-
 		// Works
         stage('Create New GitHub Repo') {
             steps {
@@ -94,9 +59,7 @@ pipeline {
 			steps {
 				script {
 					bat """
-					cd ${LOCAL_FOLDER}
-					rm -rf .git
-					git remote add origin ${NEW_REPO}
+					git remote set-url origin ${NEW_REPO}
 					git branch -M main
 					git add .
 					git commit -m "Initial commit for ${NEW_REPO_NAME}"
