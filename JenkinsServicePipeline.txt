@@ -59,7 +59,6 @@ pipeline {
 			steps {
 				script {
 					bat """
-					del .git
 					git reset
 					git remote set-url origin ${NEW_REPO}
 					git branch -M main
