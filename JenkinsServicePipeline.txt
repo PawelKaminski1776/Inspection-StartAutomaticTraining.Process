@@ -9,6 +9,7 @@ pipeline {
 
     environment {
         TEMPLATE_REPO = "https://github.com/${params.GITHUB_ORG}/Inspection-Template.git"
+		TEMPLATE_DIR = "Inspection-Template"
         NEW_REPO_NAME = "Inspection-${params.SERVICE_NAME}.Process"
         NEW_REPO = "https://github.com/${params.GITHUB_ORG}/${NEW_REPO_NAME}.git"
         LOCAL_FOLDER = "Inspection-${params.SERVICE_NAME}.Process"
@@ -21,22 +22,35 @@ pipeline {
     }
 
     stages {
-        stage('Clone Template') {
+        stage('Prepare Directories') {
             steps {
                 script {
-                    bat """
-                    rmdir /s /q ${LOCAL_FOLDER} 2>nul
-                    git clone %TEMPLATE_REPO% %LOCAL_FOLDER%
-                    """
+					bat """
+					rmdir /s /q ${TEMPLATE_DIR} 2>nul
+					rmdir /s /q ${LOCAL_FOLDER} 2>nul
+					mkdir ${TEMPLATE_DIR}
+					mkdir ${LOCAL_FOLDER}
+					"""
                 }
             }
         }
+		
+		
+		stage('Clone Template') {
+			steps {
+				script {
+					bat """
+					git clone %TEMPLATE_REPO% ${TEMPLATE_DIR}
+					"""
+				}
+			}
+		}
 
         stage('Rename Project and Update Files') {
             steps {
                 script {
                     bat """
-                    cd %LOCAL_FOLDER%
+                    cd ${CLONE_DIR}
                     ren Inspection-Template.Channel Inspection-%SERVICE_NAME%.Channel
                     ren Inspection-Template.Controllers Inspection-%SERVICE_NAME%.Controllers
                     ren Inspection-Template.Handlers Inspection-%SERVICE_NAME%.Handlers
@@ -48,7 +62,18 @@ pipeline {
                 }
             }
         }
+		
+		stage('Copy Renamed Files to New Directory') {
+			steps {
+				script {
+					bat """
+					xcopy /e /i /h ${TEMPLATE_DIR}/* ${LOCAL_FOLDER}
+					"""
+				}
+			}
+		}
 
+		// Works
         stage('Create New GitHub Repo') {
             steps {
                 script {
@@ -63,22 +88,16 @@ pipeline {
             }
         }
 
+		// Somewhat Works
 		stage('Push New Service to GitHub') {
 			steps {
 				script {
 					bat """
-					cd %LOCAL_FOLDER%
-					
-					REM Check Current Repo
-					git remote -v
-					
-					REM Switch Repos 
-					git remote set-url origin ${NEW_REPO}
-					
-					REM Check Repo Again
-					git remote -v
-					
-					REM Hopefully Pushes
+					cd ${LOCAL_FOLDER}
+					git init
+					git remote add origin ${NEW_REPO}
+					git add .
+					git commit -m "Initial commit for ${NEW_REPO_NAME}"
 					git push -u origin main
 					"""
 				}
