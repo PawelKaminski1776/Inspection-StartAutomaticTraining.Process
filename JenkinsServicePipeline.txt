@@ -41,6 +41,8 @@ pipeline {
             steps {
                 script {
                     bat """
+					ren Inspection-Template.Process Inspection-%SERVICE_NAME%.Process
+					cd Inspection-%SERVICE_NAME%.Process
                     ren Inspection-Template.Channel Inspection-%SERVICE_NAME%.Channel
                     ren Inspection-Template.Controllers Inspection-%SERVICE_NAME%.Controllers
                     ren Inspection-Template.Handlers Inspection-%SERVICE_NAME%.Handlers
@@ -71,6 +73,7 @@ pipeline {
 			steps {
 				script {
 					bat """
+					cd Inspection-%SERVICE_NAME%.Process
 					git config --global --add safe.directory C:/Users/pawel/.jenkins/workspace/Service-Generator
 					git remote set-url origin ${NEW_REPO}
 
