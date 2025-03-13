@@ -24,6 +24,27 @@ pipeline {
     }
 
     stages {
+	
+		stage('Cleanup Workspace') {
+			steps {
+				script {
+					bat """
+					echo Cleaning up workspace...
+					
+					REM Remove all files and folders except .git
+					for /d %%D in (*) do (
+						if /I NOT "%%D"=="git" rmdir /s /q "%%D"
+					)
+					for %%F in (*) do (
+						if /I NOT "%%F"==".git" del /f /q "%%F"
+					)
+
+					echo Workspace cleanup completed.
+					"""
+				}
+			}
+		}
+		
         stage('Rename Project and Update Files') {
             steps {
                 script {
@@ -40,7 +61,6 @@ pipeline {
             }
         }
 		
-		// Works
         stage('Create New GitHub Repo') {
             steps {
                 script {
@@ -55,7 +75,6 @@ pipeline {
             }
         }
 
-		// Somewhat Works
 		stage('Push New Service to GitHub') {
 			steps {
 				script {
