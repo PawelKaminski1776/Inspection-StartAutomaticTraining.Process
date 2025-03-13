@@ -25,6 +25,18 @@ pipeline {
 
     stages {
 		
+		
+        stage('Clone Template') {
+             steps {
+                 script {
+                     bat """
+                     rmdir /s /q ${LOCAL_FOLDER} 2>nul
+                     git clone %TEMPLATE_REPO% %LOCAL_FOLDER%
+                     """
+                 }
+             }
+         }
+		
         stage('Rename Project and Update Files') {
             steps {
                 script {
@@ -78,6 +90,26 @@ pipeline {
 					git add .
 					git commit -m "Initial commit" || echo No changes to commit
 					git push -u origin main
+					"""
+				}
+			}
+		}
+		
+		stage('Cleanup Workspace') {
+			steps {
+				script {
+					bat """
+					echo Cleaning up workspace...
+					
+					REM Remove all files and folders except .git
+					for /d %%D in (*) do (
+						if /I NOT "%%D"=="git" rmdir /s /q "%%D"
+					)
+					for %%F in (*) do (
+						if /I NOT "%%F"==".git" del /f /q "%%F"
+					)
+
+					echo Workspace cleanup completed.
 					"""
 				}
 			}
