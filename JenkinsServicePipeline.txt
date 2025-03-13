@@ -1,6 +1,8 @@
 pipeline {
     agent any
-
+	options {
+		skipDefaultCheckout(true)
+	}
     parameters {
         string(name: 'SERVICE_NAME', defaultValue: 'NewService', description: 'Enter the new service name')
         string(name: 'PORT_NUMBER', defaultValue: '5001', description: 'Enter the new port number')
