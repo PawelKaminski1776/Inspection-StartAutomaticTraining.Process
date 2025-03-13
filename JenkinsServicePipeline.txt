@@ -35,7 +35,6 @@ pipeline {
                     ren Inspection-Template.Process Inspection-%SERVICE_NAME%.Process
 					ren Inspection-Template.Process.sln Inspection-%SERVICE_NAME%.Process.sln
                     for /r %%f in (*) do (powershell -Command "(Get-Content '%%f') -replace 'Inspection-Template', 'Inspection-%SERVICE_NAME%' | Set-Content '%%f'")
-                    ren Inspection-Template.dockerfile Inspection-%SERVICE_NAME%.dockerfile
                     """
                 }
             }
