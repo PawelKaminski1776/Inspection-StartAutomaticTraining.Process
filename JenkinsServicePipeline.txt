@@ -24,26 +24,6 @@ pipeline {
     }
 
     stages {
-	
-		stage('Cleanup Workspace') {
-			steps {
-				script {
-					bat """
-					echo Cleaning up workspace...
-					
-					REM Remove all files and folders except .git
-					for /d %%D in (*) do (
-						if /I NOT "%%D"=="git" rmdir /s /q "%%D"
-					)
-					for %%F in (*) do (
-						if /I NOT "%%F"==".git" del /f /q "%%F"
-					)
-
-					echo Workspace cleanup completed.
-					"""
-				}
-			}
-		}
 		
         stage('Rename Project and Update Files') {
             steps {
@@ -102,48 +82,28 @@ pipeline {
 				}
 			}
 		}
+		
+		stage('Cleanup Workspace') {
+			steps {
+				script {
+					bat """
+					echo Cleaning up workspace...
+					
+					REM Remove all files and folders except .git
+					for /d %%D in (*) do (
+						if /I NOT "%%D"=="git" rmdir /s /q "%%D"
+					)
+					for %%F in (*) do (
+						if /I NOT "%%F"==".git" del /f /q "%%F"
+					)
+
+					echo Workspace cleanup completed.
+					"""
+				}
+			}
+		}
 
 		
-        stage('Ensure Jenkins Folder Exists') {
-            steps {
-                script {
-                    bat """
-                    curl -X POST -u "%JENKINS_USER%:%JENKINS_API_TOKEN%" -H "Content-Type: application/xml" -d "<com.cloudbees.hudson.plugins.folder.Folder>\n<description>Folder for Docker Deployments</description>\n</com.cloudbees.hudson.plugins.folder.Folder>" %JENKINS_URL%/createItem?name=%JENKINS_FOLDER%&mode=com.cloudbees.hudson.plugins.folder.Folder
-                    """
-                }
-            }
-        }
-
-        stage('Create Jenkins Pipeline for New Service') {
-            steps {
-                script {
-                    def pipelineScript = """
-                    pipeline {
-                        agent any
-                        environment {
-                            GIT_REPO = \"${NEW_REPO}\"
-                        }
-                        stages {
-                            stage('Checkout') {
-                                steps {
-                                    checkout scm: [
-                                        \$class: 'GitSCM',
-                                        branches: [[name: '*/main']],
-                                        userRemoteConfigs: [[url: GIT_REPO]]
-                                    ]
-                                }
-                            }
-                        }
-                    }
-                    """
-
-                    writeFile file: "pipeline-${params.SERVICE_NAME}.groovy", text: pipelineScript
-
-                    bat """
-                    curl -X POST -u "pawelkaminski1776:%JENKINS_API_TOKEN%" -H "Content-Type: application/json" -d "{\"name\":\"%SERVICE_NAME%-Pipeline\", \"mode\":\"org.jenkinsci.plugins.workflow.job.WorkflowJob\", \"from\":\"\", \"Submit\":\"OK\"}" %JENKINS_URL%/job/%JENKINS_FOLDER%/createItem?name=Project-%SERVICE_NAME%-Docker
-                    """
-                }
-            }
-        }
+        
     }
 }
