@@ -50,7 +50,7 @@ pipeline {
             steps {
                 script {
                     bat """
-                    cd ${CLONE_DIR}
+                    cd ${TEMPLATE_DIR}
                     ren Inspection-Template.Channel Inspection-%SERVICE_NAME%.Channel
                     ren Inspection-Template.Controllers Inspection-%SERVICE_NAME%.Controllers
                     ren Inspection-Template.Handlers Inspection-%SERVICE_NAME%.Handlers
