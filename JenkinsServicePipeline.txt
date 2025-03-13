@@ -137,6 +137,23 @@ pipeline {
 			}
 		}
 		
+		post {
+			success {
+				emailext subject: "Build Successful: ${env.JOB_NAME}",
+						 body: """<p>Build <b>${env.BUILD_NUMBER}</b> succeeded! 🎉</p>
+								  <p>Check logs at: <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>""",
+						 mimeType: 'text/html',
+						 to: 'pawelkaminski1776@gmail.com'
+			}
+			failure {
+				emailext subject: "Build Failed: ${env.JOB_NAME}",
+						 body: """<p>Build <b>${env.BUILD_NUMBER}</b> failed! ❌</p>
+								  <p>Check logs at: <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>""",
+						 mimeType: 'text/html',
+						 to: 'pawelkaminski1776@gmail.com'
+			}
+		}
+
 
 		
         
