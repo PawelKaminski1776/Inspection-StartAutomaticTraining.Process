@@ -60,6 +60,7 @@ pipeline {
 			steps {
 				script {
 					bat """
+					git config --global --add safe.directory C:/Users/pawel/.jenkins/workspace/Service-Generator
 					git remote set-url origin ${NEW_REPO}
 					git push -u origin main
 					"""
