@@ -136,7 +136,8 @@ pipeline {
 				}
 			}
 		}
-		
+        
+    }
 		post {
 			success {
 				emailext subject: "Build Successful: ${env.JOB_NAME}",
@@ -152,10 +153,5 @@ pipeline {
 						 mimeType: 'text/html',
 						 to: 'pawelkaminski1776@gmail.com'
 			}
-		}
-
-
-		
-        
-    }
+		}	
 }
