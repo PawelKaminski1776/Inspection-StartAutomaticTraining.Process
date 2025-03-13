@@ -67,7 +67,7 @@ pipeline {
 			steps {
 				script {
 					bat """
-					xcopy /e /i /h ${TEMPLATE_DIR}/* ${LOCAL_FOLDER}
+					xcopy /e /i /h /s ${TEMPLATE_DIR}\\* ${LOCAL_FOLDER}\
 					"""
 				}
 			}
