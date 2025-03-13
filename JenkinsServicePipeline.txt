@@ -56,6 +56,7 @@ pipeline {
                     ren Inspection-Template.Handlers Inspection-%SERVICE_NAME%.Handlers
                     ren Inspection-Template.Messages Inspection-%SERVICE_NAME%.Messages
                     ren Inspection-Template.Process Inspection-%SERVICE_NAME%.Process
+					ren Inspection-Template.Process.sln Inspection-%SERVICE_NAME%.Process.sln
                     for /r %%f in (*) do (powershell -Command "(Get-Content '%%f') -replace 'Inspection-Template', 'Inspection-%SERVICE_NAME%' | Set-Content '%%f'")
                     ren Inspection-Template.dockerfile Inspection-%SERVICE_NAME%.dockerfile
                     """
@@ -94,7 +95,9 @@ pipeline {
 				script {
 					bat """
 					cd ${LOCAL_FOLDER}
-					git remote set-url origin ${NEW_REPO}
+					rm -rf .git
+					git remote add origin ${NEW_REPO}
+					git branch -M main
 					git add .
 					git commit -m "Initial commit for ${NEW_REPO_NAME}"
 					git push -u origin main
