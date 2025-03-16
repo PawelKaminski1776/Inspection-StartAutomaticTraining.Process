@@ -5,6 +5,7 @@ pipeline {
 	}
     parameters {
         string(name: 'SERVICE_NAME', defaultValue: 'NewService', description: 'Enter the new service name')
+		string(name: 'CONTAINER_NAME', defaultValue: 'newservice', description: 'Enter the docker container name')
         string(name: 'PORT_NUMBER', defaultValue: '5001', description: 'Enter the new port number')
         string(name: 'GITHUB_ORG', defaultValue: 'PawelKaminski1776', description: 'GitHub Organization or Username')
     }
@@ -130,6 +131,19 @@ pipeline {
 					if exist "Inspection-%SERVICE_NAME%.dockerfile" (
 						powershell -Command "(Get-Content 'Inspection-%SERVICE_NAME%.dockerfile') -replace 'Inspection-Template', 'Inspection-%SERVICE_NAME%' | Set-Content 'Inspection-%SERVICE_NAME%.dockerfile'"
 						powershell -Command "(Get-Content 'Inspection-%SERVICE_NAME%.dockerfile') -replace '5000', '%PORT_NUMBER%' | Set-Content 'Inspection-%SERVICE_NAME%.dockerfile'"
+					
+					)
+					rem Convert dockerfile details to lowercase 
+					for /f %%i in ('powershell -Command "[System.Globalization.CultureInfo]::CurrentCulture.TextInfo.ToLower('%SERVICE_NAME%')"') do set "SERVICE_NAME_LC=%%i"
+					for /f %%i in ('powershell -Command "[System.Globalization.CultureInfo]::CurrentCulture.TextInfo.ToLower('%CONTAINER_NAME%')"') do set "CONTAINER_NAME_LC=%%i"
+					
+					rem Update Jenkinsfile references
+					if exist "Jenkinsfile.txt" (
+						powershell -Command "(Get-Content 'Jenkinsfile.txt') -replace 'template-service', '%SERVICE_NAME%.ToLower()-service' | Set-Content 'Jenkinsfile.txt'"
+						powershell -Command "(Get-Content 'Jenkinsfile.txt') -replace 'template-container', '%CONTAINER_NAME%.ToLower()-container' | Set-Content 'Jenkinsfile.txt'"
+						powershell -Command "(Get-Content 'Jenkinsfile.txt') -replace 'https://github.com/PawelKaminski1776/Inspection-template.Process.git', '%NEW_REPO%' | Set-Content 'Jenkinsfile.txt'"
+						powershell -Command "(Get-Content 'Jenkinsfile.txt') -replace 'Inspection-template.dockerfile', 'Inspection-%SERVICE_NAME%.dockerfile' | Set-Content 'Jenkinsfile.txt'"
+						powershell -Command "(Get-Content 'Jenkinsfile.txt') -replace '5000', '%PORT_NUMBER%' | Set-Content 'Jenkinsfile.txt'"
 					
 					)
                     """
