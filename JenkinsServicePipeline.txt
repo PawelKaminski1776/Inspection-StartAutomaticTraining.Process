@@ -198,56 +198,54 @@ pipeline {
 			steps {
 				script {
 					def jobName = "${params.SERVICE_NAME}-Pipeline"
-					def jenkinsView = "Docker-Deployment" 
+					def jenkinsView = "Docker-Deployment"  
 
-					// Create the Jenkins pipeline job
 					bat """
-					curl -X POST -u "%JENKINS_USER%:%JENKINS_API_TOKEN%" -H "Content-Type: application/json" -d \
-					"{\"name\":\"${jobName}\", \"mode\":\"org.jenkinsci.plugins.workflow.job.WorkflowJob\", \"from\":\"\", \"Submit\":\"OK\"}" \
+					curl -X POST -u "%JENKINS_USER%:%JENKINS_API_TOKEN%" -H "Content-Type: application/json" -d ^
+					"{\\"name\\":\\"${jobName}\\", \\"mode\\":\\"org.jenkinsci.plugins.workflow.job.WorkflowJob\\", \\"from\\":\\"\\", \\"Submit\\":\\"OK\\"}" ^
 					%JENKINS_URL%/createItem?name=${jobName}
 					"""
 
-					// Configure the pipeline to use the Jenkinsfile from the Git repository
+					// Configure the pipeline to use the Jenkinsfile.txt from the Git repository
 					bat """
-					curl -X POST -u "%JENKINS_USER%:%JENKINS_API_TOKEN%" -H "Content-Type: application/xml" -d \
-					"<flow-definition plugin=\"workflow-job@2.40\">\n\
-						<actions/>\n\
-						<description></description>\n\
-						<keepDependencies>false</keepDependencies>\n\
-						<properties/>\n\
-						<scm class=\"hudson.plugins.git.GitSCM\">\n\
-							<userRemoteConfigs>\n\
-								<hudson.plugins.git.UserRemoteConfig>\n\
-									<url>%NEW_REPO%</url>\n\
-									<credentialsId>%GITHUB_TOKEN%</credentialsId>\n\
-								</hudson.plugins.git.UserRemoteConfig>\n\
-							</userRemoteConfigs>\n\
-							<branches>\n\
-								<hudson.plugins.git.BranchSpec>\n\
-									<name>*/main</name>\n\
-								</hudson.plugins.git.BranchSpec>\n\
-							</branches>\n\
-						</scm>\n\
-						<definition class=\"org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition\">\n\
-							<script>Jenkinsfile.txt</script>\n\
-							<sandbox>false</sandbox>\n\
-						</definition>\n\
-						<triggers/>\n\
-						<concurrentBuild>false</concurrentBuild>\n\
-					</flow-definition>" \
+					curl -X POST -u "%JENKINS_USER%:%JENKINS_API_TOKEN%" -H "Content-Type: application/xml" -d ^
+					"<flow-definition plugin=\\"workflow-job@2.40\\">^
+						<actions/>^
+						<description></description>^
+						<keepDependencies>false</keepDependencies>^
+						<properties/>^
+						<scm class=\\"hudson.plugins.git.GitSCM\\">^
+							<userRemoteConfigs>^
+								<hudson.plugins.git.UserRemoteConfig>^
+									<url>%NEW_REPO%</url>^
+									<credentialsId>%GITHUB_TOKEN%</credentialsId>^
+								</hudson.plugins.git.UserRemoteConfig>^
+							</userRemoteConfigs>^
+							<branches>^
+								<hudson.plugins.git.BranchSpec>^
+									<name>*/main</name>^
+								</hudson.plugins.git.BranchSpec>^
+							</branches>^
+						</scm>^
+						<definition class=\\"org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition\\">^
+							<script>Jenkinsfile.txt</script>^  <!-- Referring to Jenkinsfile.txt in the repo -->
+							<sandbox>false</sandbox>^
+						</definition>^
+						<triggers/>^
+						<concurrentBuild>false</concurrentBuild>^
+					</flow-definition>" ^
 					%JENKINS_URL%/job/${jobName}/config.xml
 					"""
 
-					// Add the newly created pipeline job to the existing view
 					bat """
-					curl -X POST -u "%JENKINS_USER%:%JENKINS_API_TOKEN%" -H "Content-Type: application/xml" -d \
-					"<hudson.model.ListView>\n\
-						<name>${jenkinsView}</name>\n\
-						<description>Existing View for Pipeline Jobs</description>\n\
-						<jobNames>\n\
-							<string>${jobName}</string>\n\
-						</jobNames>\n\
-					</hudson.model.ListView>" \
+					curl -X POST -u "%JENKINS_USER%:%JENKINS_API_TOKEN%" -H "Content-Type: application/xml" -d ^
+					"<hudson.model.ListView>^
+						<name>${jenkinsView}</name>^
+						<description>Existing View for Pipeline Jobs</description>^
+						<jobNames>^
+							<string>${jobName}</string>^
+						</jobNames>^
+					</hudson.model.ListView>" ^
 					%JENKINS_URL%/view/${jenkinsView}/addJobToView
 					"""
 				}
