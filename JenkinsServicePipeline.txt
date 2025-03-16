@@ -17,7 +17,6 @@ pipeline {
         NEW_REPO = "https://github.com/${params.GITHUB_ORG}/${NEW_REPO_NAME}.git"
         LOCAL_FOLDER = "Inspection-${params.SERVICE_NAME}.Process"
         PROJECT_NAME = "Inspection-${params.SERVICE_NAME}.Process"
-        JENKINS_FOLDER = "Docker-Deployment"
         JENKINS_USER = "pawelkaminski1776"
         JENKINS_API_TOKEN = credentials('jenkins-api-token')
         GITHUB_TOKEN = credentials('github-api-token')
@@ -194,59 +193,68 @@ pipeline {
 			}
 		}
 		
-		stage('Ensure Jenkins Folder Exists') {
-			steps {
-				script {
-					bat """
-					curl -X POST -u "%JENKINS_USER%:%JENKINS_API_TOKEN%" -H "Content-Type: application/xml" -d ^
-					"<com.cloudbees.hudson.plugins.folder.Folder>^
-					<description>Folder for Docker Deployments</description>^
-					</com.cloudbees.hudson.plugins.folder.Folder>" ^
-					%JENKINS_URL%/createItem?name=%JENKINS_FOLDER%^&mode=com.cloudbees.hudson.plugins.folder.Folder
-					"""
-				}
-			}
-		}
 
-		
 		stage('Create Jenkins Pipeline for New Service') {
 			steps {
 				script {
-					def pipelineScript = """
-					pipeline {
-						agent any
-						environment {
-							GIT_REPO = \"${NEW_REPO}\"
-						}
-						stages {
-							stage('Checkout') {
-								steps {
-									checkout scm: [
-										\$class: 'GitSCM',
-										branches: [[name: '*/main']],
-										userRemoteConfigs: [[url: GIT_REPO]]
-									]
-								}
-							}
-						}
-					}
+					def jobName = "${params.SERVICE_NAME}-Pipeline"
+					def jenkinsView = "Docker-Deployment" 
+
+					// Create the Jenkins pipeline job
+					bat """
+					curl -X POST -u "%JENKINS_USER%:%JENKINS_API_TOKEN%" -H "Content-Type: application/json" -d \
+					"{\"name\":\"${jobName}\", \"mode\":\"org.jenkinsci.plugins.workflow.job.WorkflowJob\", \"from\":\"\", \"Submit\":\"OK\"}" \
+					%JENKINS_URL%/createItem?name=${jobName}
 					"""
 
-					// Write the pipeline script to a file
-					writeFile file: "pipeline-${params.SERVICE_NAME}.groovy", text: pipelineScript
-
-					// Upload the Jenkinsfile.txt to the Jenkins job
+					// Configure the pipeline to use the Jenkinsfile from the Git repository
 					bat """
-					curl -X POST -u "pawelkaminski1776:%JENKINS_API_TOKEN%" -H "Content-Type: application/json" -d "{\"name\":\"%SERVICE_NAME%-Pipeline\", \"mode\":\"org.jenkinsci.plugins.workflow.job.WorkflowJob\", \"from\":\"\", \"Submit\":\"OK\"}" %JENKINS_URL%/job/%JENKINS_FOLDER%/createItem?name=Project-%SERVICE_NAME%-Docker
+					curl -X POST -u "%JENKINS_USER%:%JENKINS_API_TOKEN%" -H "Content-Type: application/xml" -d \
+					"<flow-definition plugin=\"workflow-job@2.40\">\n\
+						<actions/>\n\
+						<description></description>\n\
+						<keepDependencies>false</keepDependencies>\n\
+						<properties/>\n\
+						<scm class=\"hudson.plugins.git.GitSCM\">\n\
+							<userRemoteConfigs>\n\
+								<hudson.plugins.git.UserRemoteConfig>\n\
+									<url>%NEW_REPO%</url>\n\
+									<credentialsId>%GITHUB_TOKEN%</credentialsId>\n\
+								</hudson.plugins.git.UserRemoteConfig>\n\
+							</userRemoteConfigs>\n\
+							<branches>\n\
+								<hudson.plugins.git.BranchSpec>\n\
+									<name>*/main</name>\n\
+								</hudson.plugins.git.BranchSpec>\n\
+							</branches>\n\
+						</scm>\n\
+						<definition class=\"org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition\">\n\
+							<script>Jenkinsfile.txt</script>\n\
+							<sandbox>false</sandbox>\n\
+						</definition>\n\
+						<triggers/>\n\
+						<concurrentBuild>false</concurrentBuild>\n\
+					</flow-definition>" \
+					%JENKINS_URL%/job/${jobName}/config.xml
 					"""
 
-					// Upload the Jenkinsfile.txt content to the newly created Jenkins pipeline job
+					// Add the newly created pipeline job to the existing view
 					bat """
-					curl -X POST -u "pawelkaminski1776:%JENKINS_API_TOKEN%" -H "Content-Type: application/xml" --data-binary @Jenkinsfile.txt %JENKINS_URL%/job/%JENKINS_FOLDER%/job/Project-%SERVICE_NAME%-Docker/config.xml
+					curl -X POST -u "%JENKINS_USER%:%JENKINS_API_TOKEN%" -H "Content-Type: application/xml" -d \
+					"<hudson.model.ListView>\n\
+						<name>${jenkinsView}</name>\n\
+						<description>Existing View for Pipeline Jobs</description>\n\
+						<jobNames>\n\
+							<string>${jobName}</string>\n\
+						</jobNames>\n\
+					</hudson.model.ListView>" \
+					%JENKINS_URL%/view/${jenkinsView}/addJobToView
 					"""
 				}
 			}
 		}
+
+
 
 		
 		stage('Cleanup Workspace') {
