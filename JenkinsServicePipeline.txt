@@ -5,7 +5,7 @@ pipeline {
 	}
     parameters {
         string(name: 'SERVICE_NAME', defaultValue: 'NewService', description: 'Enter the new service name')
-		string(name: 'CONTAINER_NAME', defaultValue: 'newservice', description: 'Enter the docker container name')
+		string(name: 'CONTAINER_NAME', defaultValue: 'micro-service', description: 'Enter the docker container name')
         string(name: 'PORT_NUMBER', defaultValue: '5001', description: 'Enter the new port number')
         string(name: 'GITHUB_ORG', defaultValue: 'PawelKaminski1776', description: 'GitHub Organization or Username')
     }
@@ -21,7 +21,7 @@ pipeline {
         JENKINS_USER = "pawelkaminski1776"
         JENKINS_API_TOKEN = credentials('jenkins-api-token')
         GITHUB_TOKEN = credentials('github-api-token')
-        JENKINS_URL = "http://localhost:8080/"
+        JENKINS_URL = "http://localhost:8080"
     }
 
     stages {
