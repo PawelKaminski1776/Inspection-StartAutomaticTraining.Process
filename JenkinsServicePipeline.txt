@@ -49,30 +49,60 @@ pipeline {
 					cd Inspection-%SERVICE_NAME%.Channel
 					ren Inspection-Template.Channel.csproj Inspection-%SERVICE_NAME%.Channel.csproj
 					ren Inspection-Template.Channel.csproj.user Inspection-%SERVICE_NAME%.Channel.csproj.user
+					for /r %%f in (*.csproj) do (
+						powershell -Command "(Get-Content '%%f') -replace 'InspectionTemplate', 'Inspection%SERVICE_NAME%' | Set-Content '%%f'"
+					)
+					for /r %%f in (*.cs) do (
+						powershell -Command "(Get-Content '%%f') -replace 'namespace InspectionTemplate', 'namespace Inspection%SERVICE_NAME%' | Set-Content '%%f'"
+					)
 					cd ..
 
 					ren Inspection-Template.Controllers Inspection-%SERVICE_NAME%.Controllers
 					cd Inspection-%SERVICE_NAME%.Controllers
 					ren Inspection-Template.Controllers.csproj Inspection-%SERVICE_NAME%.Controllers.csproj
 					ren Inspection-Template.Controllers.csproj.user Inspection-%SERVICE_NAME%.Controllers.csproj.user
+					for /r %%f in (*.csproj) do (
+						powershell -Command "(Get-Content '%%f') -replace 'InspectionTemplate', 'Inspection%SERVICE_NAME%' | Set-Content '%%f'"
+					)
+					for /r %%f in (*.cs) do (
+						powershell -Command "(Get-Content '%%f') -replace 'namespace InspectionTemplate', 'namespace Inspection%SERVICE_NAME%' | Set-Content '%%f'"
+					)
 					cd ..
 
 					ren Inspection-Template.Handlers Inspection-%SERVICE_NAME%.Handlers
 					cd Inspection-%SERVICE_NAME%.Handlers
 					ren Inspection-Template.Handlers.csproj Inspection-%SERVICE_NAME%.Handlers.csproj
 					ren Inspection-Template.Handlers.csproj.user Inspection-%SERVICE_NAME%.Handlers.csproj.user
+					for /r %%f in (*.csproj) do (
+						powershell -Command "(Get-Content '%%f') -replace 'InspectionTemplate', 'Inspection%SERVICE_NAME%' | Set-Content '%%f'"
+					)
+					for /r %%f in (*.cs) do (
+						powershell -Command "(Get-Content '%%f') -replace 'namespace InspectionTemplate', 'namespace Inspection%SERVICE_NAME%' | Set-Content '%%f'"
+					)
 					cd ..
 
 					ren Inspection-Template.Messages Inspection-%SERVICE_NAME%.Messages
 					cd Inspection-%SERVICE_NAME%.Messages
 					ren Inspection-Template.Messages.csproj Inspection-%SERVICE_NAME%.Messages.csproj
 					ren Inspection-Template.Messages.csproj.user Inspection-%SERVICE_NAME%.Messages.csproj.user
+					for /r %%f in (*.csproj) do (
+						powershell -Command "(Get-Content '%%f') -replace 'InspectionTemplate', 'Inspection%SERVICE_NAME%' | Set-Content '%%f'"
+					)
+					for /r %%f in (*.cs) do (
+						powershell -Command "(Get-Content '%%f') -replace 'namespace InspectionTemplate', 'namespace Inspection%SERVICE_NAME%' | Set-Content '%%f'"
+					)
 					cd ..
 
 					ren Inspection-Template.Process Inspection-%SERVICE_NAME%.Process
 					cd Inspection-%SERVICE_NAME%.Process
 					ren Inspection-Template.Process.csproj Inspection-%SERVICE_NAME%.Process.csproj
 					ren Inspection-Template.Process.csproj.user Inspection-%SERVICE_NAME%.Process.csproj.user
+					for /r %%f in (*.csproj) do (
+						powershell -Command "(Get-Content '%%f') -replace 'InspectionTemplate', 'Inspection%SERVICE_NAME%' | Set-Content '%%f'"
+					)
+					for /r %%f in (*.cs) do (
+						powershell -Command "(Get-Content '%%f') -replace 'namespace InspectionTemplate', 'namespace Inspection%SERVICE_NAME%' | Set-Content '%%f'"
+					)
 					cd ..
 
 					ren Inspection-Template.Process.sln Inspection-%SERVICE_NAME%.Process.sln
@@ -81,6 +111,7 @@ pipeline {
 					for /r %%f in (*.cs) do (
 						powershell -Command "(Get-Content '%%f') -replace 'namespace InspectionTemplate', 'namespace Inspection%SERVICE_NAME%' | Set-Content '%%f'"
 					)
+					
 
 					rem Update references inside .csproj files
 					for /r %%f in (*.csproj) do (
@@ -97,8 +128,8 @@ pipeline {
 					
 					rem Update Dockerfile references
 					if exist "Inspection-%SERVICE_NAME%.dockerfile" (
-						powershell -Command "(Get-Content 'Dockerfile') -replace 'Inspection-Template', 'Inspection-%SERVICE_NAME%' | Set-Content 'Dockerfile'"
-						powershell -Command "(Get-Content 'Dockerfile') -replace '5000', '%PORT_NUMBER%' | Set-Content 'Dockerfile'"
+						powershell -Command "(Get-Content 'Inspection-%SERVICE_NAME%.dockerfile') -replace 'Inspection-Template', 'Inspection-%SERVICE_NAME%' | Set-Content 'Inspection-%SERVICE_NAME%.dockerfile'"
+						powershell -Command "(Get-Content 'Inspection-%SERVICE_NAME%.dockerfile') -replace '5000', '%PORT_NUMBER%' | Set-Content 'Inspection-%SERVICE_NAME%.dockerfile'"
 					
 					)
                     """
