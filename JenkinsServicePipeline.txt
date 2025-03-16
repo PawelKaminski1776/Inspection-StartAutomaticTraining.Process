@@ -194,6 +194,56 @@ pipeline {
 			}
 		}
 		
+		stage('Ensure Jenkins Folder Exists') {
+            steps {
+                script {
+                    bat """
+                    curl -X POST -u "%JENKINS_USER%:%JENKINS_API_TOKEN%" -H "Content-Type: application/xml" -d "<com.cloudbees.hudson.plugins.folder.Folder>\n<description>Folder for Docker Deployments</description>\n</com.cloudbees.hudson.plugins.folder.Folder>" %JENKINS_URL%/createItem?name=%JENKINS_FOLDER%&mode=com.cloudbees.hudson.plugins.folder.Folder
+                    """
+                }
+            }
+        }
+		
+		stage('Create Jenkins Pipeline for New Service') {
+			steps {
+				script {
+					def pipelineScript = """
+					pipeline {
+						agent any
+						environment {
+							GIT_REPO = \"${NEW_REPO}\"
+						}
+						stages {
+							stage('Checkout') {
+								steps {
+									checkout scm: [
+										\$class: 'GitSCM',
+										branches: [[name: '*/main']],
+										userRemoteConfigs: [[url: GIT_REPO]]
+									]
+								}
+							}
+						}
+					}
+					"""
+
+					// Write the pipeline script to a file
+					writeFile file: "pipeline-${params.SERVICE_NAME}.groovy", text: pipelineScript
+
+					// Upload the Jenkinsfile.txt to the Jenkins job
+					bat """
+					curl -X POST -u "pawelkaminski1776:%JENKINS_API_TOKEN%" -H "Content-Type: application/json" -d "{\"name\":\"%SERVICE_NAME%-Pipeline\", \"mode\":\"org.jenkinsci.plugins.workflow.job.WorkflowJob\", \"from\":\"\", \"Submit\":\"OK\"}" %JENKINS_URL%/job/%JENKINS_FOLDER%/createItem?name=Project-%SERVICE_NAME%-Docker
+					"""
+
+					// Upload the Jenkinsfile.txt content to the newly created Jenkins pipeline job
+					bat """
+					curl -X POST -u "pawelkaminski1776:%JENKINS_API_TOKEN%" -H "Content-Type: application/xml" --data-binary @Jenkinsfile.txt %JENKINS_URL%/job/%JENKINS_FOLDER%/job/Project-%SERVICE_NAME%-Docker/config.xml
+					"""
+				}
+			}
+		}
+
+		
 		stage('Cleanup Workspace') {
 			steps {
 				script {
