@@ -195,14 +195,19 @@ pipeline {
 		}
 		
 		stage('Ensure Jenkins Folder Exists') {
-            steps {
-                script {
-                    bat """
-                    curl -X POST -u "%JENKINS_USER%:%JENKINS_API_TOKEN%" -H "Content-Type: application/xml" -d "<com.cloudbees.hudson.plugins.folder.Folder>\n<description>Folder for Docker Deployments</description>\n</com.cloudbees.hudson.plugins.folder.Folder>" %JENKINS_URL%/createItem?name=%JENKINS_FOLDER%&mode=com.cloudbees.hudson.plugins.folder.Folder
-                    """
-                }
-            }
-        }
+			steps {
+				script {
+					bat """
+					curl -X POST -u "%JENKINS_USER%:%JENKINS_API_TOKEN%" -H "Content-Type: application/xml" -d ^
+					"<com.cloudbees.hudson.plugins.folder.Folder>^
+					<description>Folder for Docker Deployments</description>^
+					</com.cloudbees.hudson.plugins.folder.Folder>" ^
+					%JENKINS_URL%/createItem?name=%JENKINS_FOLDER%^&mode=com.cloudbees.hudson.plugins.folder.Folder
+					"""
+				}
+			}
+		}
+
 		
 		stage('Create Jenkins Pipeline for New Service') {
 			steps {
