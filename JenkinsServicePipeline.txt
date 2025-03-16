@@ -198,8 +198,9 @@ pipeline {
 			steps {
 				script {
 					def jobName = "${params.SERVICE_NAME}-Pipeline"
-					def jenkinsView = "Docker-Deployment"  
+					def jenkinsView = "Docker-Deployment"  // Replace with your actual view name
 
+					// Create the Jenkins pipeline job
 					bat """
 					curl -X POST -u "%JENKINS_USER%:%JENKINS_API_TOKEN%" -H "Content-Type: application/json" -d ^
 					"{\\"name\\":\\"${jobName}\\", \\"mode\\":\\"org.jenkinsci.plugins.workflow.job.WorkflowJob\\", \\"from\\":\\"\\", \\"Submit\\":\\"OK\\"}" ^
@@ -237,6 +238,7 @@ pipeline {
 					%JENKINS_URL%/job/${jobName}/config.xml
 					"""
 
+					// Add the newly created pipeline job to the existing view
 					bat """
 					curl -X POST -u "%JENKINS_USER%:%JENKINS_API_TOKEN%" -H "Content-Type: application/xml" -d ^
 					"<hudson.model.ListView>^
@@ -251,6 +253,7 @@ pipeline {
 				}
 			}
 		}
+
 
 
 
