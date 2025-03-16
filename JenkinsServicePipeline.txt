@@ -41,34 +41,66 @@ pipeline {
             steps {
                 script {
                     bat """
+					rem Rename directories
 					ren Inspection-Template.Process Inspection-%SERVICE_NAME%.Process
 					cd Inspection-%SERVICE_NAME%.Process
-                    ren Inspection-Template.Channel Inspection-%SERVICE_NAME%.Channel
+
+					ren Inspection-Template.Channel Inspection-%SERVICE_NAME%.Channel
 					cd Inspection-%SERVICE_NAME%.Channel
 					ren Inspection-Template.Channel.csproj Inspection-%SERVICE_NAME%.Channel.csproj
 					ren Inspection-Template.Channel.csproj.user Inspection-%SERVICE_NAME%.Channel.csproj.user
 					cd ..
-                    ren Inspection-Template.Controllers Inspection-%SERVICE_NAME%.Controllers
+
+					ren Inspection-Template.Controllers Inspection-%SERVICE_NAME%.Controllers
 					cd Inspection-%SERVICE_NAME%.Controllers
 					ren Inspection-Template.Controllers.csproj Inspection-%SERVICE_NAME%.Controllers.csproj
 					ren Inspection-Template.Controllers.csproj.user Inspection-%SERVICE_NAME%.Controllers.csproj.user
 					cd ..
-                    ren Inspection-Template.Handlers Inspection-%SERVICE_NAME%.Handlers
+
+					ren Inspection-Template.Handlers Inspection-%SERVICE_NAME%.Handlers
 					cd Inspection-%SERVICE_NAME%.Handlers
 					ren Inspection-Template.Handlers.csproj Inspection-%SERVICE_NAME%.Handlers.csproj
 					ren Inspection-Template.Handlers.csproj.user Inspection-%SERVICE_NAME%.Handlers.csproj.user
 					cd ..
-                    ren Inspection-Template.Messages Inspection-%SERVICE_NAME%.Messages
+
+					ren Inspection-Template.Messages Inspection-%SERVICE_NAME%.Messages
 					cd Inspection-%SERVICE_NAME%.Messages
 					ren Inspection-Template.Messages.csproj Inspection-%SERVICE_NAME%.Messages.csproj
 					ren Inspection-Template.Messages.csproj.user Inspection-%SERVICE_NAME%.Messages.csproj.user
 					cd ..
-                    ren Inspection-Template.Process Inspection-%SERVICE_NAME%.Process
+
+					ren Inspection-Template.Process Inspection-%SERVICE_NAME%.Process
 					cd Inspection-%SERVICE_NAME%.Process
 					ren Inspection-Template.Process.csproj Inspection-%SERVICE_NAME%.Process.csproj
 					ren Inspection-Template.Process.csproj.user Inspection-%SERVICE_NAME%.Process.csproj.user
+					cd ..
+
 					ren Inspection-Template.Process.sln Inspection-%SERVICE_NAME%.Process.sln
-                    for /r %%f in (*) do (powershell -Command "(Get-Content '%%f') -replace 'Inspection-Template', 'Inspection-%SERVICE_NAME%' | Set-Content '%%f'")
+
+					rem Replace namespace in all C# files
+					for /r %%f in (*.cs) do (
+						powershell -Command "(Get-Content '%%f') -replace 'namespace InspectionTemplate', 'namespace Inspection%SERVICE_NAME%' | Set-Content '%%f'"
+					)
+
+					rem Update references inside .csproj files
+					for /r %%f in (*.csproj) do (
+						powershell -Command "(Get-Content '%%f') -replace 'InspectionTemplate', 'Inspection%SERVICE_NAME%' | Set-Content '%%f'"
+					)
+
+					rem Update solution file references (.sln)
+					for /r %%f in (*.sln) do (
+						powershell -Command "(Get-Content '%%f') -replace 'Inspection-Template', 'Inspection-%SERVICE_NAME%' | Set-Content '%%f'"
+					)
+					
+					rem Update Dockerfile
+					ren Inspection-Template.dockerfile Inspection-%SERVICE_NAME%.dockerfile
+					
+					rem Update Dockerfile references
+					if exist "Inspection-%SERVICE_NAME%.dockerfile" (
+						powershell -Command "(Get-Content 'Dockerfile') -replace 'Inspection-Template', 'Inspection-%SERVICE_NAME%' | Set-Content 'Dockerfile'"
+						powershell -Command "(Get-Content 'Dockerfile') -replace '5000', '%PORT_NUMBER%' | Set-Content 'Dockerfile'"
+					
+					)
                     """
                 }
             }
