@@ -194,66 +194,6 @@ pipeline {
 		}
 		
 
-		stage('Create Jenkins Pipeline for New Service') {
-			steps {
-				script {
-					def jobName = "${params.SERVICE_NAME}-Pipeline"
-					def jenkinsView = "Docker-Deployment"  // Replace with your actual view name
-
-					// Create the Jenkins pipeline job
-					bat """
-					curl -X POST -u "%JENKINS_USER%:%JENKINS_API_TOKEN%" -H "Content-Type: application/json" -d ^
-					"{\\"name\\":\\"${jobName}\\", \\"mode\\":\\"org.jenkinsci.plugins.workflow.job.WorkflowJob\\", \\"from\\":\\"\\", \\"Submit\\":\\"OK\\"}" ^
-					%JENKINS_URL%/createItem?name=${jobName}
-					"""
-
-					// Configure the pipeline to use the Jenkinsfile.txt from the Git repository
-					bat """
-					curl -X POST -u "%JENKINS_USER%:%JENKINS_API_TOKEN%" -H "Content-Type: application/xml" -d ^
-					"<flow-definition plugin=\\"workflow-job@2.40\\">^
-						<actions/>^
-						<description></description>^
-						<keepDependencies>false</keepDependencies>^
-						<properties/>^
-						<scm class=\\"hudson.plugins.git.GitSCM\\">^
-							<userRemoteConfigs>^
-								<hudson.plugins.git.UserRemoteConfig>^
-									<url>%NEW_REPO%</url>^
-									<credentialsId>%GITHUB_TOKEN%</credentialsId>^
-								</hudson.plugins.git.UserRemoteConfig>^
-							</userRemoteConfigs>^
-							<branches>^
-								<hudson.plugins.git.BranchSpec>^
-									<name>*/main</name>^
-								</hudson.plugins.git.BranchSpec>^
-							</branches>^
-						</scm>^
-						<definition class=\\"org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition\\">^
-							<script>Jenkinsfile.txt</script>^  <!-- Referring to Jenkinsfile.txt in the repo -->
-							<sandbox>false</sandbox>^
-						</definition>^
-						<triggers/>^
-						<concurrentBuild>false</concurrentBuild>^
-					</flow-definition>" ^
-					%JENKINS_URL%/job/${jobName}/config.xml
-					"""
-
-					// Add the newly created pipeline job to the existing view
-					bat """
-					curl -X POST -u "%JENKINS_USER%:%JENKINS_API_TOKEN%" -H "Content-Type: application/xml" -d ^
-					"<hudson.model.ListView>^
-						<name>${jenkinsView}</name>^
-						<description>Existing View for Pipeline Jobs</description>^
-						<jobNames>^
-							<string>${jobName}</string>^
-						</jobNames>^
-					</hudson.model.ListView>" ^
-					%JENKINS_URL%/view/${jenkinsView}/addJobToView
-					"""
-				}
-			}
-		}
-
 
 
 
