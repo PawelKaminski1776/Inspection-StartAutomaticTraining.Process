@@ -9,6 +9,7 @@ pipeline {
         CI = "true"
         DOCKER_IMAGE = "template-service"
         CONTAINER_NAME = "template-container"
+		GITHUB_TOKEN = credentials('github-api-token')
     }
 
     stages {
@@ -17,7 +18,8 @@ pipeline {
                 checkout scm: [
                     $class: 'GitSCM', 
                     branches: [[name: '*/main']],
-                    userRemoteConfigs: [[url: 'https://github.com/PawelKaminski1776/Inspection-template.Process.git']]
+                    userRemoteConfigs: [[url: 'https://github.com/PawelKaminski1776/Inspection-Template.git',
+					credentialsId: 'github-api-token']]
                 ]
             }
         }
