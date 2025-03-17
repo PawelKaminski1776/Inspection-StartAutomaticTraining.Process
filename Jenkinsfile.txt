@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    tools {
-        msbuild "dotnet"  
-    }
-
     environment {
         CI = "true"
         DOCKER_IMAGE = "template-service"
@@ -21,24 +17,6 @@ pipeline {
                     userRemoteConfigs: [[url: 'https://github.com/PawelKaminski1776/Inspection-Template.git',
 					credentialsId: 'github-api-token']]
                 ]
-            }
-        }
-
-        stage('Restore Dependencies') {
-            steps {
-                bat 'dotnet restore'
-            }
-        }
-
-        stage('Build') {
-            steps {
-                bat 'dotnet build --configuration Release --no-restore'         
-            }
-        }
-
-        stage('Publish') {
-            steps {
-                bat 'dotnet publish -c Release -o publish'
             }
         }
 
