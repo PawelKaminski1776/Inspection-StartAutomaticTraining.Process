@@ -140,7 +140,7 @@ pipeline {
 					if exist "Jenkinsfile.txt" (
 						powershell -Command "(Get-Content 'Jenkinsfile.txt') -replace 'template-service', '%SERVICE_NAME_LC%-service' | Set-Content 'Jenkinsfile.txt'"
 						powershell -Command "(Get-Content 'Jenkinsfile.txt') -replace 'template-container', '%CONTAINER_NAME_LC%-container' | Set-Content 'Jenkinsfile.txt'"
-						powershell -Command "(Get-Content 'Jenkinsfile.txt') -replace 'https://github.com/PawelKaminski1776/Inspection-template.Process.git', '%NEW_REPO%' | Set-Content 'Jenkinsfile.txt'"
+						powershell -Command "(Get-Content 'Jenkinsfile.txt') -replace 'https://github.com/PawelKaminski1776/Inspection-Template.git', '%NEW_REPO%' | Set-Content 'Jenkinsfile.txt'"
 						powershell -Command "(Get-Content 'Jenkinsfile.txt') -replace 'Inspection-template.dockerfile', 'Inspection-%SERVICE_NAME%.dockerfile' | Set-Content 'Jenkinsfile.txt'"
 						powershell -Command "(Get-Content 'Jenkinsfile.txt') -replace '5000', '%PORT_NUMBER%' | Set-Content 'Jenkinsfile.txt'"
 					
