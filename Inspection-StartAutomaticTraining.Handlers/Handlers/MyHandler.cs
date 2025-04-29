@@ -1,6 +1,6 @@
-using InspectionTemplate.Messages.Dtos;
+using InspectionStartAutomaticTraining.Messages.Dtos;
 
-namespace InspectionTemplate.Handlers
+namespace InspectionStartAutomaticTraining.Handlers
 {
     public class MyHandler : IHandleMessages<MessageRequest>
     {

@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using InspectionTemplate.Messages.Dtos;
-using InspectionTemplate.Controllers.DtoFactory;
+using InspectionStartAutomaticTraining.Messages.Dtos;
+using InspectionStartAutomaticTraining.Controllers.DtoFactory;
 
-namespace InspectionTemplate.Controllers
+namespace InspectionStartAutomaticTraining.Controllers
 {
     [ApiController]
     [Route("Api/Controllers")]
