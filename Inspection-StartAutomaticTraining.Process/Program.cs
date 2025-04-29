@@ -6,6 +6,7 @@ using InspectionStartAutomaticTraining.Controllers.DtoFactory;
 using InspectionStartAutomaticTraining.Process;
 using InspectionStartAutomaticTraining.Channel.Services;
 using InspectionStartAutomaticTraining.Messages.Dtos;
+using InspectionStartAutomaticTraining.Channel;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +20,14 @@ builder.Services.AddScoped<MongoConnect>(provider =>
     var connectionString = appConfig.GetSetting("ConnectionStrings:DefaultConnection");
     return new MongoConnect(connectionString);
 });
+builder.Services.AddScoped<PythonAPI>(provider =>
+{
+    var pythonApi = appConfig.GetSetting("PythonAPI");
+    var username = appConfig.GetSetting("Username");
+    var password = appConfig.GetSetting("Password");
+    return new PythonAPI(pythonApi, username, password);
+});
+
 
 builder.Services.AddScoped<MyHandler>();
 
@@ -63,8 +72,8 @@ if (builder.Environment.IsDevelopment())
 {
     builder.WebHost.ConfigureKestrel(options =>
     {
-        options.ListenAnyIP(5003);
-        options.ListenAnyIP(5004, listenOptions =>
+        options.ListenAnyIP(5019);
+        options.ListenAnyIP(5020, listenOptions =>
         {
             listenOptions.UseHttps();
         });
@@ -75,14 +84,14 @@ else
 {
     builder.WebHost.ConfigureKestrel(options =>
     {
-        options.ListenAnyIP(5003);
+        options.ListenAnyIP(5019);
     });
     transport.StorageDirectory("/home/ubuntu/storage");
 
 }
 
 var routing = transport.Routing();
-routing.RouteToEndpoint(typeof(MessageRequest), "NServiceBusHandlers");
+routing.RouteToEndpoint(typeof(AutomaticTrainingRequest), "NServiceBusHandlers");
 
 var scanner = endpointConfiguration.AssemblyScanner().ScanFileSystemAssemblies = true;
 
@@ -102,7 +111,6 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowAll");
 app.UseMiddleware<LoggingMiddleware>();
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

@@ -1,19 +1,28 @@
+using InspectionStartAutomaticTraining.Channel;
 using InspectionStartAutomaticTraining.Messages.Dtos;
+using MongoDB.Bson.IO;
+using Newtonsoft.Json;
 
 namespace InspectionStartAutomaticTraining.Handlers
 {
-    public class MyHandler : IHandleMessages<MessageRequest>
+    public class MyHandler : IHandleMessages<AutomaticTrainingRequest>
     {
-        public MyHandler()
+        private PythonAPI _pythonApi;
+        public MyHandler(PythonAPI pythonApi)
         {
+            this._pythonApi = pythonApi;
         }
 
-        public async Task Handle(MessageRequest message, IMessageHandlerContext context)
+        public async Task Handle(AutomaticTrainingRequest message, IMessageHandlerContext context)
         {
             try
             {
-                
-                await context.Reply(new MessageResponse { Message = "HELLO BACK FROM HANDLER"});
+
+                var response = await _pythonApi.SendToImageTrainingAPI("/AutomaticTraining", message);
+
+                var automaticTrainingResponse = Newtonsoft.Json.JsonConvert.DeserializeObject<AutomaticTrainingResponse>(response);
+
+                await context.Reply(automaticTrainingResponse);
 
             }
             catch (Exception ex)
