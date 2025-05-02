@@ -20,6 +20,13 @@ builder.Services.AddScoped<MongoConnect>(provider =>
     var connectionString = appConfig.GetSetting("ConnectionStrings:DefaultConnection");
     return new MongoConnect(connectionString);
 });
+
+builder.Services.AddScoped<InspectionService>(provider =>
+{
+    var connectionString = appConfig.GetSetting("ConnectionStrings:DefaultConnection");
+    return new InspectionService(connectionString);
+});
+
 builder.Services.AddScoped<PythonAPI>(provider =>
 {
     var pythonApi = appConfig.GetSetting("PythonAPI");
@@ -46,10 +53,15 @@ builder.Services.AddCors(options =>
 });
 
 var endpointConfiguration = new EndpointConfiguration("NServiceBusHandlers");
+// Disable Immediate Retries
+var recoverability = endpointConfiguration.Recoverability();
+recoverability.Immediate(immediate => immediate.NumberOfRetries(0));
+
+// Disable Delayed Retries
+recoverability.Delayed(delayed => delayed.NumberOfRetries(0));
 string instanceId = Environment.MachineName;
 endpointConfiguration.MakeInstanceUniquelyAddressable(instanceId);
 endpointConfiguration.EnableCallbacks();
-
 var settings = new JsonSerializerSettings
 {
     TypeNameHandling = TypeNameHandling.Auto,

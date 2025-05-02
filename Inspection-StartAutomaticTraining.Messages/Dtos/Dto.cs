@@ -22,7 +22,13 @@ namespace InspectionStartAutomaticTraining.Messages.Dtos
     }
     public class AutomaticTrainingResponse : IMessage
     {
-        public string Status { get; set; }
+        public string id { get; set; }
+        public string Inspectionname { get; set; }
+
+        public string county { get; set; }
+        public string NumOfImages { get; set; }
+
+        public string overalllossrate { get; set; }
     }
 
 }

@@ -28,8 +28,10 @@ namespace InspectionStartAutomaticTraining.Channel
             {
                 var byteArray = Encoding.ASCII.GetBytes($"{_username}:{_password}");
                 _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+                _client.Timeout = TimeSpan.FromMinutes(145);
 
                 string requestUrl = $"{Url + url}?model_url={Uri.EscapeDataString(message.ModelUrl)}&numberofimgs={message.NumberofImgs}&county={Uri.EscapeDataString(message.county)}";
+
 
                 HttpResponseMessage response = await _client.GetAsync(requestUrl);
                 response.EnsureSuccessStatusCode();

@@ -23,8 +23,8 @@ namespace InspectionStartAutomaticTraining.Controllers
                     county = county,
                     inspection = inspection
                 };
-                Console.WriteLine(NumberOfImgs + ModelUrl + county + inspection);
-                var response = await _messageSession.Request<AutomaticTrainingResponse>(request);
+                Console.WriteLine("\n\n\nInspection: " + inspection + "\n\n\n\n");
+                var response = await _messageSession.Request<MessageResponse>(request);
                 return Ok(response);
             }
             catch (Exception ex)
